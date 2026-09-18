@@ -11,6 +11,11 @@ Pick a starter template and copy it into your own repo:
 - [`templates/python/`](templates/python/) — Python, standard library only
 - [`templates/node/`](templates/node/) — Node.js, standard library only
 
+> **Copy the whole folder, including hidden files.** Each template contains a
+> hidden `.github/` directory (a CI check that smoke-tests your bot on every
+> push) that `cp templates/python/* .` will silently skip — use
+> `cp -r templates/python/. your-repo/` instead.
+
 Both are **zero-dependency**: nothing to `pip install` or `npm install`. Each
 template has its own README with a quick-start command. The only thing you need
 to write is one function: `choose_move(board, you)` (Python) or
