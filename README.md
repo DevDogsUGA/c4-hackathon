@@ -157,13 +157,15 @@ Run it locally (see your template's README), then either:
 2. Check the **Actions** tab on your repo — the template ships a CI smoke
    test that builds your image, starts it, and POSTs a sample `/move`
    request. Green means the arena will be able to run your bot.
-3. Submit your team name and repo URL via the **submission form**:
-   **`<SUBMISSION_FORM_URL_PLACEHOLDER>`**
+3. Register your team name and repo URL via the **registration form** (skip
+   this if you already registered): **<https://docs.google.com/forms/d/e/1FAIpQLScdmpZ6sBKP2HXG5Y473eY8yEZeKajDyWy_4NhUM3EMLpsCrw/viewform>**.
+   To change your repo URL later, edit your form response. Registered teams
+   show up on the status page: **<https://c4.devdogsuga.org>**.
 
 Submissions are re-validated at **T-30, T-15, and T-5 minutes** before the
 tournament starts — failures are announced to the room, so you'll have a
-chance to fix a broken submission. Bring a USB drive as a fallback in case
-your GitHub push fails at the last minute.
+chance to fix a broken submission. If your GitHub push fails at the last
+minute, find an organizer right away.
 
 ## 6. Tournament format
 
