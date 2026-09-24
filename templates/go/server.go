@@ -13,7 +13,7 @@
 //
 //	curl -X POST http://localhost:8000/move \
 //	  -H "Content-Type: application/json" \
-//	  -d '{"you":1,"board":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],"moves":[],"game":{"match_id":"local","game_number":1,"clock_remaining_ms":10000}}'
+//	  -d '{"you":1,"board":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],"moves":[],"game":{"match_id":"local","game_number":1,"clock_remaining_ms":5000}}'
 package main
 
 import (
@@ -60,9 +60,17 @@ func send(w http.ResponseWriter, status int, body any) {
 	}
 }
 
+type gameInfo struct {
+	MatchID          string `json:"match_id"`
+	GameNumber       int    `json:"game_number"`
+	ClockRemainingMs int64  `json:"clock_remaining_ms"`
+}
+
 type moveRequest struct {
-	Board [][]int `json:"board"`
-	You   int     `json:"you"`
+	Board [][]int  `json:"board"`
+	You   int      `json:"you"`
+	Moves []int    `json:"moves"`
+	Game  gameInfo `json:"game"`
 }
 
 func handleMove(w http.ResponseWriter, r *http.Request) {
@@ -78,7 +86,13 @@ func handleMove(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	column := chooseMove(req.Board, req.You)
+	info := MoveInfo{
+		Moves:            req.Moves,
+		MatchID:          req.Game.MatchID,
+		GameNumber:       req.Game.GameNumber,
+		ClockRemainingMs: req.Game.ClockRemainingMs,
+	}
+	column := chooseMove(req.Board, req.You, info)
 
 	legal := false
 	for _, col := range legalColumns(req.Board) {

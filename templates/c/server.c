@@ -17,7 +17,7 @@
  * Then test it:
  *   curl -X POST http://localhost:8000/move \
  *     -H "Content-Type: application/json" \
- *     -d '{"you":1,"board":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],"moves":[],"game":{"match_id":"local","game_number":1,"clock_remaining_ms":10000}}'
+ *     -d '{"you":1,"board":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],"moves":[],"game":{"match_id":"local","game_number":1,"clock_remaining_ms":5000}}'
  *
  * Requires a POSIX sockets environment: Linux, macOS, or WSL on Windows.
  */
@@ -333,6 +333,47 @@ static int parse_move_request(const char *body, size_t body_len, int board[COLS]
     return 0;
 }
 
+/* Fills *info from the request's optional `moves` and `game` fields.
+ * *moves_out receives a heap-allocated array the caller must free();
+ * info->match_id points directly into `root`'s strings, so it's only valid
+ * until `root` is freed. Missing fields default to zero/empty. */
+static void parse_move_info(cJSON *root, MoveInfo *info, int **moves_out) {
+    memset(info, 0, sizeof(*info));
+    info->match_id = "";
+
+    int *moves = NULL;
+    int move_count = 0;
+    cJSON *moves_json = cJSON_GetObjectItemCaseSensitive(root, "moves");
+    if (cJSON_IsArray(moves_json)) {
+        move_count = cJSON_GetArraySize(moves_json);
+        moves = malloc(sizeof(int) * (size_t)(move_count > 0 ? move_count : 1));
+        int i = 0;
+        cJSON *m;
+        cJSON_ArrayForEach(m, moves_json) {
+            moves[i++] = cJSON_IsNumber(m) ? m->valueint : 0;
+        }
+    }
+    info->moves = moves;
+    info->move_count = move_count;
+    *moves_out = moves;
+
+    cJSON *game_json = cJSON_GetObjectItemCaseSensitive(root, "game");
+    if (cJSON_IsObject(game_json)) {
+        cJSON *match_id_json = cJSON_GetObjectItemCaseSensitive(game_json, "match_id");
+        if (cJSON_IsString(match_id_json)) {
+            info->match_id = match_id_json->valuestring;
+        }
+        cJSON *game_number_json = cJSON_GetObjectItemCaseSensitive(game_json, "game_number");
+        if (cJSON_IsNumber(game_number_json)) {
+            info->game_number = game_number_json->valueint;
+        }
+        cJSON *clock_json = cJSON_GetObjectItemCaseSensitive(game_json, "clock_remaining_ms");
+        if (cJSON_IsNumber(clock_json)) {
+            info->clock_remaining_ms = (long long)clock_json->valuedouble;
+        }
+    }
+}
+
 static void handle_move(int fd, const char *body, size_t body_len) {
     int board[COLS][ROWS];
     int you;
@@ -344,7 +385,12 @@ static void handle_move(int fd, const char *body, size_t body_len) {
         return;
     }
 
-    int column = choose_move(board, you);
+    MoveInfo info;
+    int *moves_buf = NULL;
+    parse_move_info(root, &info, &moves_buf);
+
+    int column = choose_move(board, you, &info);
+    free(moves_buf);
 
     if (!is_legal_column(board, column)) {
         char message[128];

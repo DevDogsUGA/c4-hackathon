@@ -27,7 +27,7 @@ import java.util.concurrent.Executors;
  * Then test it:
  *   curl -X POST http://localhost:8000/move \
  *     -H "Content-Type: application/json" \
- *     -d '{"you":1,"board":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],"moves":[],"game":{"match_id":"local","game_number":1,"clock_remaining_ms":10000}}'
+ *     -d '{"you":1,"board":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],"moves":[],"game":{"match_id":"local","game_number":1,"clock_remaining_ms":5000}}'
  */
 public class Server {
     // Columns that aren't full yet. Kept separate from Bot.java so the
@@ -116,6 +116,24 @@ public class Server {
         return ((Number) raw).intValue();
     }
 
+    @SuppressWarnings("unchecked")
+    private static MoveInfo parseMoveInfo(Map<String, Object> request) {
+        List<Integer> movesList = (List<Integer>) request.getOrDefault("moves", new ArrayList<Integer>());
+        int[] moves = new int[movesList.size()];
+        for (int i = 0; i < moves.length; i++) {
+            moves[i] = ((Number) movesList.get(i)).intValue();
+        }
+
+        Map<String, Object> game = (Map<String, Object>) request.getOrDefault("game", new LinkedHashMap<String, Object>());
+        String matchId = game.get("match_id") != null ? game.get("match_id").toString() : "";
+        int gameNumber = game.get("game_number") != null ? ((Number) game.get("game_number")).intValue() : 0;
+        long clockRemainingMs = game.get("clock_remaining_ms") != null
+                ? ((Number) game.get("clock_remaining_ms")).longValue()
+                : 0L;
+
+        return new MoveInfo(moves, matchId, gameNumber, clockRemainingMs);
+    }
+
     private static class MoveHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
@@ -146,8 +164,9 @@ public class Server {
 
                     int[][] board = parseBoard(request.get("board"));
                     int you = parseYou(request.get("you"));
+                    MoveInfo info = parseMoveInfo(request);
 
-                    int column = Bot.chooseMove(board, you);
+                    int column = Bot.chooseMove(board, you, info);
 
                     if (!legalColumns(board).contains(column)) {
                         throw new IllegalStateException("chooseMove returned an illegal column: " + column);

@@ -6,6 +6,18 @@ package main
 
 import "math/rand"
 
+// MoveInfo carries extra per-move context, passed as chooseMove's third
+// argument. Safe to ignore -- the default bot doesn't use it.
+type MoveInfo struct {
+	// Moves is the full move history so far, as column numbers.
+	Moves      []int
+	MatchID    string
+	GameNumber int
+	// ClockRemainingMs is your remaining think-time budget for THIS GAME
+	// (not this move) -- see the root README's "Time control" section.
+	ClockRemainingMs int64
+}
+
 // chooseMove picks your next move.
 //
 // board is a slice of 8 columns, each a slice of 8 rows: board[col][row].
@@ -14,12 +26,15 @@ import "math/rand"
 //
 // you is 1 or 2: which player you are this game.
 //
+// info carries extra context (move history, match/game IDs, clock); see
+// MoveInfo above.
+//
 // Return an int 0-7, the column you want to drop a piece into. It MUST be a
 // legal (non-full) column; see legalMoves below.
 //
 // Every call gets the full game state, so don't rely on variables that
 // persist between calls: the arena may restart your bot mid-game.
-func chooseMove(board [][]int, you int) int {
+func chooseMove(board [][]int, you int, info MoveInfo) int {
 	moves := legalMoves(board)
 	return moves[rand.Intn(len(moves))]
 }

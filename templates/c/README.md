@@ -23,7 +23,7 @@ The server listens on port 8000 (or `$PORT` if set). In another terminal:
 ```bash
 curl -X POST http://localhost:8000/move \
   -H "Content-Type: application/json" \
-  -d '{"you":1,"board":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],"moves":[],"game":{"match_id":"local","game_number":1,"clock_remaining_ms":10000}}'
+  -d '{"you":1,"board":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],"moves":[],"game":{"match_id":"local","game_number":1,"clock_remaining_ms":5000}}'
 ```
 
 You should get back something like `{"column": 4}`.
@@ -33,14 +33,19 @@ output.
 
 ## What to edit
 
-Open `bot.c` and change the `choose_move(board, you)` function. That's it.
-`server.c` is the HTTP server (raw POSIX sockets, CORS headers, JSON parsing
-via cJSON); it calls your function once per turn, and you shouldn't need to
-touch it.
+Open `bot.c` and change the `choose_move(board, you, info)` function. That's
+it. `server.c` is the HTTP server (raw POSIX sockets, CORS headers, JSON
+parsing via cJSON); it calls your function once per turn, and you shouldn't
+need to touch it.
 
 - `board[col][row]` — column 0 is the left edge, row 0 is the bottom.
 - `0` = empty, `1` = player 1's piece, `2` = player 2's piece.
 - Return the column (0–7) you want to drop into. It must not be full.
+- `info` (`const MoveInfo *`, defined in `bot.h`) is extra context you can
+  ignore: `moves`/`move_count` (the move history), `match_id`,
+  `game_number`, and `clock_remaining_ms` (your remaining think-time budget
+  for **this game**, not this move). It's only valid for the duration of the
+  `choose_move` call — don't store the pointer.
 
 See the root [`README.md`](../../README.md) for the full contract (request/response
 shape, clock rules, failure rules).

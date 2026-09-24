@@ -11,12 +11,12 @@
  * Then test it:
  *   curl -X POST http://localhost:8000/move \
  *     -H "Content-Type: application/json" \
- *     -d '{"you":1,"board":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],"moves":[],"game":{"match_id":"local","game_number":1,"clock_remaining_ms":10000}}'
+ *     -d '{"you":1,"board":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],"moves":[],"game":{"match_id":"local","game_number":1,"clock_remaining_ms":5000}}'
  */
 
 import http from "node:http";
 import { chooseMove } from "./bot.ts";
-import type { Board, Cell } from "./types.ts";
+import type { Board, Cell, MoveInfo } from "./types.ts";
 
 // Columns that aren't full yet. Kept separate from bot.ts so the server's
 // safety check still works however you change your bot.
@@ -39,13 +39,30 @@ function isBoard(value: unknown): value is Board {
   );
 }
 
-function isRequest(value: unknown): value is { board: Board; you: 1 | 2 } {
+interface MoveRequest {
+  board: Board;
+  you: 1 | 2;
+  moves?: number[];
+  game?: { match_id?: string; game_number?: number; clock_remaining_ms?: number };
+}
+
+function isRequest(value: unknown): value is MoveRequest {
   if (typeof value !== "object" || value === null) return false;
   const request = value as Record<string, unknown>;
   return (
     isBoard(request.board) &&
     (request.you === 1 || request.you === 2)
   );
+}
+
+// Builds the third argument to chooseMove from the raw request fields.
+function buildMoveInfo(request: MoveRequest): MoveInfo {
+  return {
+    moves: request.moves ?? [],
+    matchId: request.game?.match_id ?? "",
+    gameNumber: request.game?.game_number ?? 0,
+    clockRemainingMs: request.game?.clock_remaining_ms ?? 0,
+  };
 }
 
 const CORS_HEADERS = {
@@ -92,7 +109,8 @@ const server = http.createServer((req, res) => {
         }
 
         const { board, you } = parsed;
-        const column = chooseMove(board, you);
+        const info = buildMoveInfo(parsed);
+        const column = chooseMove(board, you, info);
 
         if (!Number.isInteger(column) || !legalColumns(board).includes(column)) {
           throw new Error(`chooseMove returned an illegal column: ${column}`);

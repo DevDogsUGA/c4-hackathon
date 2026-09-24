@@ -9,13 +9,19 @@
 //         board[col][row]: col 0 is the LEFT column, row 0 is the BOTTOM row.
 //         0 = empty, 1 = player 1's piece, 2 = player 2's piece.
 // you:    1 or 2, which player you are this game.
+// info:   extra context, safe to ignore. An object with:
+//           .moves               the full move history (array of columns)
+//           .matchId             string
+//           .gameNumber          number
+//           .clockRemainingMs    your remaining think-time budget for THIS
+//                                 GAME (not this move) -- see the root README
 //
 // Return: a number 0-7, the column you want to drop a piece into.
 //         It MUST be a legal (non-full) column; see `legalMoves` below.
 //
 // Every call gets the full game state, so don't rely on variables that
 // persist between calls: the arena may restart your bot mid-game.
-function chooseMove(board, you) {
+function chooseMove(board, you, info) {
   const moves = legalMoves(board);
   return moves[Math.floor(Math.random() * moves.length)];
 }

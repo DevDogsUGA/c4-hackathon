@@ -14,7 +14,7 @@
  * Then test it:
  *   curl -X POST http://localhost:8000/move \
  *     -H "Content-Type: application/json" \
- *     -d '{"you":1,"board":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],"moves":[],"game":{"match_id":"local","game_number":1,"clock_remaining_ms":10000}}'
+ *     -d '{"you":1,"board":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],"moves":[],"game":{"match_id":"local","game_number":1,"clock_remaining_ms":5000}}'
  */
 
 #include <algorithm>
@@ -109,7 +109,18 @@ int main() {
           request.at("board").get<std::vector<std::vector<int>>>();
       int you = request.at("you").get<int>();
 
-      int column = choose_move(board, you);
+      MoveInfo info;
+      if (request.contains("moves")) {
+        info.moves = request.at("moves").get<std::vector<int>>();
+      }
+      if (request.contains("game")) {
+        const json& game = request.at("game");
+        info.match_id = game.value("match_id", "");
+        info.game_number = game.value("game_number", 0);
+        info.clock_remaining_ms = game.value("clock_remaining_ms", 0LL);
+      }
+
+      int column = choose_move(board, you, info);
 
       std::vector<int> legal = legal_columns(board);
       bool is_legal = std::find(legal.begin(), legal.end(), column) != legal.end();

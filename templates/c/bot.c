@@ -14,6 +14,8 @@
  *        0 = empty, 1 = player 1's piece, 2 = player 2's piece.
  * you:   1 or 2, which player you are this game.
  *
+ * info:  extra context, safe to ignore. See MoveInfo in bot.h.
+ *
  * Return: an int 0-7, the column you want to drop a piece into.
  *         It MUST be a legal (non-full) column; see legal_moves below.
  *
@@ -21,8 +23,9 @@
  * between calls: no static or global variables to remember what happened
  * last turn -- the arena may restart your bot mid-game.
  */
-int choose_move(const int board[COLS][ROWS], int you) {
+int choose_move(const int board[COLS][ROWS], int you, const MoveInfo *info) {
     (void)you;
+    (void)info;
 
     int moves[COLS];
     int n = legal_moves(board, moves);

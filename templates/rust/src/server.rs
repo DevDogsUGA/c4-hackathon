@@ -9,7 +9,7 @@
 //! Then test it:
 //!     curl -X POST http://localhost:8000/move \
 //!       -H "Content-Type: application/json" \
-//!       -d '{"you":1,"board":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],"moves":[],"game":{"match_id":"local","game_number":1,"clock_remaining_ms":10000}}'
+//!       -d '{"you":1,"board":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],"moves":[],"game":{"match_id":"local","game_number":1,"clock_remaining_ms":5000}}'
 
 mod bot;
 
@@ -32,10 +32,24 @@ fn legal_columns(board: &[Vec<u8>]) -> Vec<usize> {
         .collect()
 }
 
+#[derive(Deserialize, Default)]
+struct GameInfo {
+    #[serde(default)]
+    match_id: String,
+    #[serde(default)]
+    game_number: u32,
+    #[serde(default)]
+    clock_remaining_ms: u64,
+}
+
 #[derive(Deserialize)]
 struct MoveRequest {
     board: Vec<Vec<u8>>,
     you: u8,
+    #[serde(default)]
+    moves: Vec<usize>,
+    #[serde(default)]
+    game: GameInfo,
 }
 
 fn cors_headers() -> Vec<Header> {
@@ -70,8 +84,15 @@ fn handle_move(request: tiny_http::Request, raw: &str) {
 
         let board = parsed.board;
         let you = parsed.you;
+        let info = bot::MoveInfo {
+            moves: parsed.moves,
+            match_id: parsed.game.match_id,
+            game_number: parsed.game.game_number,
+            clock_remaining_ms: parsed.game.clock_remaining_ms,
+        };
 
-        let outcome = panic::catch_unwind(AssertUnwindSafe(|| bot::choose_move(&board, you)));
+        let outcome =
+            panic::catch_unwind(AssertUnwindSafe(|| bot::choose_move(&board, you, &info)));
 
         let column = match outcome {
             Ok(column) => column,

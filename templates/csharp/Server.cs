@@ -10,7 +10,7 @@
 // Then test it:
 //   curl -X POST http://localhost:8000/move \
 //     -H "Content-Type: application/json" \
-//     -d '{"you":1,"board":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],"moves":[],"game":{"match_id":"local","game_number":1,"clock_remaining_ms":10000}}'
+//     -d '{"you":1,"board":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],"moves":[],"game":{"match_id":"local","game_number":1,"clock_remaining_ms":5000}}'
 
 using System.Text.Json;
 using C4Bot;
@@ -87,7 +87,24 @@ app.Run(async context =>
                 .ToArray();
             var you = root.GetProperty("you").GetInt32();
 
-            var column = Bot.ChooseMove(board, you);
+            var moves = root.TryGetProperty("moves", out var movesEl)
+                ? movesEl.EnumerateArray().Select(m => m.GetInt32()).ToList()
+                : new List<int>();
+            var matchId = "";
+            var gameNumber = 0;
+            long clockRemainingMs = 0;
+            if (root.TryGetProperty("game", out var gameEl))
+            {
+                if (gameEl.TryGetProperty("match_id", out var matchIdEl))
+                    matchId = matchIdEl.GetString() ?? "";
+                if (gameEl.TryGetProperty("game_number", out var gameNumberEl))
+                    gameNumber = gameNumberEl.GetInt32();
+                if (gameEl.TryGetProperty("clock_remaining_ms", out var clockEl))
+                    clockRemainingMs = clockEl.GetInt64();
+            }
+            var info = new MoveInfo(moves, matchId, gameNumber, clockRemainingMs);
+
+            var column = Bot.ChooseMove(board, you, info);
 
             if (!LegalColumns(board).Contains(column))
             {

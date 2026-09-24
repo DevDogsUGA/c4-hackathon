@@ -10,15 +10,15 @@ Pick a starter template and copy it into your own repo:
 
 | Template | Edit this file | Function | Server (don't touch) | Dependencies |
 |---|---|---|---|---|
-| [`python/`](templates/python/) | `bot.py` | `choose_move(board, you)` | `server.py` | none (stdlib) |
-| [`node/`](templates/node/) | `bot.js` | `chooseMove(board, you)` | `server.js` | none (stdlib) |
-| [`typescript/`](templates/typescript/) | `bot.ts` | `chooseMove(board, you)` | `server.ts` | `tsx` (`npm install`) |
-| [`java/`](templates/java/) | `Bot.java` | `chooseMove(board, you)` | `Server.java` | none (JDK) |
-| [`go/`](templates/go/) | `bot.go` | `chooseMove(board, you)` | `server.go` | none (stdlib) |
-| [`csharp/`](templates/csharp/) | `Bot.cs` | `ChooseMove(board, you)` | `Server.cs` | none (ASP.NET Core, ships with the SDK) |
-| [`cpp/`](templates/cpp/) | `bot.cpp` | `choose_move(board, you)` | `server.cpp` | bundled headers in `vendor/` |
-| [`c/`](templates/c/) | `bot.c` | `choose_move(board, you)` | `server.c` | bundled cJSON in `vendor/` |
-| [`rust/`](templates/rust/) | `src/bot.rs` | `choose_move(board, you)` | `src/server.rs` | crates, fetched by `cargo` |
+| [`python/`](templates/python/) | `bot.py` | `choose_move(board, you, info=None)` | `server.py` | none (stdlib) |
+| [`node/`](templates/node/) | `bot.js` | `chooseMove(board, you, info)` | `server.js` | none (stdlib) |
+| [`typescript/`](templates/typescript/) | `bot.ts` | `chooseMove(board, you, info)` | `server.ts` | `tsx` (`npm install`) |
+| [`java/`](templates/java/) | `Bot.java` | `chooseMove(board, you, info)` | `Server.java` | none (JDK) |
+| [`go/`](templates/go/) | `bot.go` | `chooseMove(board, you, info)` | `server.go` | none (stdlib) |
+| [`csharp/`](templates/csharp/) | `Bot.cs` | `ChooseMove(board, you, info)` | `Server.cs` | none (ASP.NET Core, ships with the SDK) |
+| [`cpp/`](templates/cpp/) | `bot.cpp` | `choose_move(board, you, info)` | `server.cpp` | bundled headers in `vendor/` |
+| [`c/`](templates/c/) | `bot.c` | `choose_move(board, you, info)` | `server.c` | bundled cJSON in `vendor/` |
+| [`rust/`](templates/rust/) | `src/bot.rs` | `choose_move(board, you, info)` | `src/server.rs` | crates, fetched by `cargo` |
 
 > **Copy the whole folder, including hidden files.** Each template contains a
 > hidden `.github/` directory (a CI check that smoke-tests your bot on every
@@ -46,7 +46,7 @@ Request:
   "game": {
     "match_id": "rr-007",
     "game_number": 2,
-    "clock_remaining_ms": 8420
+    "clock_remaining_ms": 3420
   }
 }
 ```
@@ -66,6 +66,19 @@ Response (must be `200`):
   left this game (see [Time control](#3-time-control) below).
 - Your response's `column` must be `0`–`7` and must not already be full
   (i.e. it must be a **legal move**).
+
+### The `info` argument
+
+Every template's move function also receives a third argument (called
+`info`, or the idiomatic equivalent in that language) bundling `moves`,
+`game.match_id`, `game.game_number`, and `game.clock_remaining_ms` from the
+request above — the same data, just handed to you pre-parsed instead of
+something you dig out of `board`/`you` yourself. It's entirely optional:
+the starter bot in every template ignores it and still compiles/runs/type-checks
+cleanly. The one field worth actually reading once your bot does more than
+move randomly is the clock — `clock_remaining_ms` is your remaining
+think-time budget for **this game**, not this move, so spend it wisely
+across turns. See your template's README for the exact signature.
 
 ### Board encoding, visually
 
@@ -108,8 +121,8 @@ you send it (this is the browser's "Private Network Access" check).
 
 ## 3. Time control
 
-Each bot gets a **10-second chess clock per game**, shared across all your
-`/move` calls in that game — not 10 seconds per move. The arena measures wall
+Each bot gets a **5-second chess clock per game**, shared across all your
+`/move` calls in that game — not 5 seconds per move. The arena measures wall
 clock from when it sends the request to when it fully receives your response.
 
 | Event | Consequence |

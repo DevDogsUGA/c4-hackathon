@@ -5,12 +5,21 @@
 
 namespace C4Bot;
 
+// Extra per-move context, passed as ChooseMove's third argument. Safe to
+// ignore -- the default bot doesn't use it.
+//   Moves             the full move history so far, as column numbers
+//   ClockRemainingMs  your remaining think-time budget for THIS GAME (not
+//                     this move) -- see the root README's "Time control"
+//                     section
+public record MoveInfo(List<int> Moves, string MatchId, int GameNumber, long ClockRemainingMs);
+
 public static class Bot
 {
     // board:  an array of 8 columns, each an array of 8 rows.
     //         board[col][row]: col 0 is the LEFT column, row 0 is the BOTTOM row.
     //         0 = empty, 1 = player 1's piece, 2 = player 2's piece.
     // you:    1 or 2, which player you are this game.
+    // info:   extra context, safe to ignore. See MoveInfo above.
     //
     // Return: an int 0-7, the column you want to drop a piece into.
     //         It MUST be a legal (non-full) column; see `LegalMoves` below.
@@ -18,7 +27,7 @@ public static class Bot
     // Every call gets the full game state, so don't rely on state persisting
     // between calls (e.g. static fields): the arena may restart your bot
     // mid-game.
-    public static int ChooseMove(int[][] board, int you)
+    public static int ChooseMove(int[][] board, int you, MoveInfo info)
     {
         var moves = LegalMoves(board);
         return moves[Random.Shared.Next(moves.Count)];

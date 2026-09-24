@@ -10,7 +10,7 @@ Run it:
 Then test it:
     curl -X POST http://localhost:8000/move \
       -H "Content-Type: application/json" \
-      -d '{"you":1,"board":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],"moves":[],"game":{"match_id":"local","game_number":1,"clock_remaining_ms":10000}}'
+      -d '{"you":1,"board":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],"moves":[],"game":{"match_id":"local","game_number":1,"clock_remaining_ms":5000}}'
 """
 
 import json
@@ -18,6 +18,7 @@ import os
 import signal
 import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from types import SimpleNamespace
 
 from bot import choose_move
 
@@ -70,8 +71,15 @@ class BotHandler(BaseHTTPRequestHandler):
             request = json.loads(raw)
             board = request["board"]
             you = request["you"]
+            game = request.get("game", {})
+            info = SimpleNamespace(
+                moves=request.get("moves", []),
+                match_id=game.get("match_id"),
+                game_number=game.get("game_number"),
+                clock_remaining_ms=game.get("clock_remaining_ms"),
+            )
 
-            column = choose_move(board, you)
+            column = choose_move(board, you, info)
 
             if not isinstance(column, int) or column not in legal_columns(board):
                 raise ValueError(f"choose_move returned an illegal column: {column!r}")

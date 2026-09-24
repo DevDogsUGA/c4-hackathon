@@ -12,13 +12,20 @@ import random
 #         board[col][row]: col 0 is the LEFT column, row 0 is the BOTTOM row.
 #         0 = empty, 1 = player 1's piece, 2 = player 2's piece.
 # you:    1 or 2, which player you are this game.
+# info:   extra context, safe to ignore. A small object with:
+#           .moves               the full move history (list[int] of columns)
+#           .match_id            str
+#           .game_number         int
+#           .clock_remaining_ms  your remaining think-time budget for THIS
+#                                 GAME (not this move) -- see the root README
+#           You don't need to import anything to ignore this parameter.
 #
 # Return: an int 0-7, the column you want to drop a piece into.
 #         It MUST be a legal (non-full) column; see `legal_moves` below.
 #
 # Every call gets the full game state, so don't rely on variables that
 # persist between calls: the arena may restart your bot mid-game.
-def choose_move(board, you):
+def choose_move(board, you, info=None):
     return random.choice(legal_moves(board))
 
 

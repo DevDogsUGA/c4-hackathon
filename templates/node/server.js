@@ -10,7 +10,7 @@
  * Then test it:
  *   curl -X POST http://localhost:8000/move \
  *     -H "Content-Type: application/json" \
- *     -d '{"you":1,"board":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],"moves":[],"game":{"match_id":"local","game_number":1,"clock_remaining_ms":10000}}'
+ *     -d '{"you":1,"board":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],"moves":[],"game":{"match_id":"local","game_number":1,"clock_remaining_ms":5000}}'
  */
 
 const http = require("node:http");
@@ -62,9 +62,15 @@ const server = http.createServer((req, res) => {
     req.on("end", () => {
       try {
         const request = JSON.parse(body);
-        const { board, you } = request;
+        const { board, you, moves, game } = request;
+        const info = {
+          moves: moves || [],
+          matchId: game && game.match_id,
+          gameNumber: game && game.game_number,
+          clockRemainingMs: game && game.clock_remaining_ms,
+        };
 
-        const column = chooseMove(board, you);
+        const column = chooseMove(board, you, info);
 
         if (!Number.isInteger(column) || !legalColumns(board).includes(column)) {
           throw new Error(`chooseMove returned an illegal column: ${column}`);

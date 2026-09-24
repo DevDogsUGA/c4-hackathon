@@ -7,8 +7,9 @@
 
 #include <random>
 
-int choose_move(const std::vector<std::vector<int>>& board, int you) {
-  (void)you;  // the default bot plays randomly and doesn't care who it is
+int choose_move(const std::vector<std::vector<int>>& board, int you, const MoveInfo& info) {
+  (void)you;   // the default bot plays randomly and doesn't care who it is
+  (void)info;  // ...or how much clock it has left
 
   std::vector<int> moves = legal_moves(board);
 
