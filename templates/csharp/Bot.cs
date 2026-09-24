@@ -3,7 +3,7 @@
 // The HTTP server lives in Server.cs. It calls `Bot.ChooseMove` once per turn
 // with the current board and sends your answer back to the arena.
 
-namespace ConnectFourBot;
+namespace C4Bot;
 
 public static class Bot
 {

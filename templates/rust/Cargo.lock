@@ -24,6 +24,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "c4-bot"
+version = "0.1.0"
+dependencies = [
+ "ctrlc",
+ "rand",
+ "serde",
+ "serde_json",
+ "tiny_http",
+]
+
+[[package]]
 name = "cfg-if"
 version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -40,17 +51,6 @@ name = "chunked_transfer"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6e4de3bc4ea267985becf712dc6d9eed8b04c953b3fcfb339ebc87acd9804901"
-
-[[package]]
-name = "connect4-bot"
-version = "0.1.0"
-dependencies = [
- "ctrlc",
- "rand",
- "serde",
- "serde_json",
- "tiny_http",
-]
 
 [[package]]
 name = "ctrlc"

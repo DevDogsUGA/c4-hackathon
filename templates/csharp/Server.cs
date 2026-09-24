@@ -13,7 +13,7 @@
 //     -d '{"you":1,"board":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],"moves":[],"game":{"match_id":"local","game_number":1,"clock_remaining_ms":10000}}'
 
 using System.Text.Json;
-using ConnectFourBot;
+using C4Bot;
 
 // Columns that aren't full yet. Kept separate from Bot.cs so the server's
 // safety check still works however you change your bot.
