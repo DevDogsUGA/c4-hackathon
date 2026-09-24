@@ -8,19 +8,26 @@ Then the bots play each other in a live tournament.
 
 Pick a starter template and copy it into your own repo:
 
-- [`templates/python/`](templates/python/) — Python, standard library only
-- [`templates/node/`](templates/node/) — Node.js, standard library only
+| Template | Edit this file | Function | Server (don't touch) | Dependencies |
+|---|---|---|---|---|
+| [`python/`](templates/python/) | `bot.py` | `choose_move(board, you)` | `server.py` | none (stdlib) |
+| [`node/`](templates/node/) | `bot.js` | `chooseMove(board, you)` | `server.js` | none (stdlib) |
+| [`typescript/`](templates/typescript/) | `bot.ts` | `chooseMove(board, you)` | `server.ts` | `tsx` (`npm install`) |
+| [`java/`](templates/java/) | `Bot.java` | `chooseMove(board, you)` | `Server.java` | none (JDK) |
+| [`go/`](templates/go/) | `bot.go` | `chooseMove(board, you)` | `server.go` | none (stdlib) |
+| [`csharp/`](templates/csharp/) | `Bot.cs` | `ChooseMove(board, you)` | `Server.cs` | none (ASP.NET Core, ships with the SDK) |
+| [`cpp/`](templates/cpp/) | `bot.cpp` | `choose_move(board, you)` | `server.cpp` | bundled headers in `vendor/` |
+| [`c/`](templates/c/) | `bot.c` | `choose_move(board, you)` | `server.c` | bundled cJSON in `vendor/` |
+| [`rust/`](templates/rust/) | `src/bot.rs` | `choose_move(board, you)` | `src/server.rs` | crates, fetched by `cargo` |
 
 > **Copy the whole folder, including hidden files.** Each template contains a
 > hidden `.github/` directory (a CI check that smoke-tests your bot on every
-> push) that `cp templates/python/* .` will silently skip — use
+> push) that `cp templates/python/* .` will silently skip. Use
 > `cp -r templates/python/. your-repo/` instead.
 
-Both are **zero-dependency**: nothing to `pip install` or `npm install`. Each
-template has its own README with a quick-start command. The only thing you need
-to write is one function: `choose_move(board, you)` (Python) or
-`chooseMove(board, you)` (Node). Everything else — the HTTP server, CORS
-headers, JSON parsing — is already done for you.
+You only write one function. The HTTP server, CORS headers, and JSON parsing
+are already done in the server file, which calls your function once per turn.
+Each template's README has a quick-start command and the toolchain you need.
 
 ## 2. The bot contract
 

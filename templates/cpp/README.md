@@ -1,11 +1,21 @@
-# Connect Four bot — Python starter
+# Connect Four bot — C++ starter
 
-Zero dependencies. Stdlib only — nothing to `pip install`.
+Two vendored MIT-licensed single-header libraries, no package manager needed:
+[cpp-httplib](https://github.com/yhirose/cpp-httplib) v0.57.1 and
+[nlohmann/json](https://github.com/nlohmann/json) v3.12.0, both checked into
+`vendor/`.
+
+## Prerequisites
+
+A C++17 compiler and `make` (e.g. `g++` or `clang++`, plus `pthread` support).
+On Windows, use WSL or Docker — this template hasn't been tested with MSVC or
+a native Windows toolchain.
 
 ## Quick start
 
 ```bash
-python3 server.py
+make
+./bot
 ```
 
 The server listens on port 8000 (or `$PORT` if set). In another terminal:
@@ -18,11 +28,15 @@ curl -X POST http://localhost:8000/move \
 
 You should get back something like `{"column": 4}`.
 
+`make run` builds and runs in one step. `make clean` removes the built
+binary.
+
 ## What to edit
 
-Open `bot.py` and change the `choose_move(board, you)` function. That's it.
-`server.py` is the HTTP server (CORS headers, JSON parsing, error handling); it
-calls your function once per turn, and you shouldn't need to touch it.
+Open `bot.cpp` (and its declarations in `bot.hpp`) and change the
+`choose_move(board, you)` function. That's it. `server.cpp` is the HTTP
+server (CORS headers, JSON parsing, error handling); it calls your function
+once per turn, and you shouldn't need to touch it.
 
 - `board[col][row]` — column 0 is the left edge, row 0 is the bottom.
 - `0` = empty, `1` = player 1's piece, `2` = player 2's piece.

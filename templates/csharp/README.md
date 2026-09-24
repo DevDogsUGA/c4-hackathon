@@ -1,11 +1,14 @@
-# Connect Four bot — Python starter
+# Connect Four bot — C# starter
 
-Zero dependencies. Stdlib only — nothing to `pip install`.
+Zero dependencies. ASP.NET Core minimal API (ships with the .NET SDK) —
+nothing to `dotnet add package`.
 
 ## Quick start
 
+Requires the [.NET SDK](https://dotnet.microsoft.com/download) 8 or later.
+
 ```bash
-python3 server.py
+dotnet run
 ```
 
 The server listens on port 8000 (or `$PORT` if set). In another terminal:
@@ -20,8 +23,8 @@ You should get back something like `{"column": 4}`.
 
 ## What to edit
 
-Open `bot.py` and change the `choose_move(board, you)` function. That's it.
-`server.py` is the HTTP server (CORS headers, JSON parsing, error handling); it
+Open `Bot.cs` and change the `Bot.ChooseMove(board, you)` method. That's it.
+`Server.cs` is the HTTP server (CORS headers, JSON parsing, error handling); it
 calls your function once per turn, and you shouldn't need to touch it.
 
 - `board[col][row]` — column 0 is the left edge, row 0 is the bottom.

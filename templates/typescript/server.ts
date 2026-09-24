@@ -1,27 +1,51 @@
 /**
- * HTTP server for your Connect Four bot (Node.js, stdlib only; no npm install needed).
+ * HTTP server for your Connect Four bot (Node.js stdlib only; tsx runs the
+ * TypeScript directly, no build step needed).
  *
- * You shouldn't need to edit this file. Write your bot in bot.js: this server
+ * You shouldn't need to edit this file. Write your bot in bot.ts: this server
  * handles HTTP, CORS headers, and JSON parsing, then calls `chooseMove` from
- * bot.js once per turn.
+ * bot.ts once per turn.
  *
  * Run it:
- *   node server.js
+ *   npm start
  * Then test it:
  *   curl -X POST http://localhost:8000/move \
  *     -H "Content-Type: application/json" \
  *     -d '{"you":1,"board":[[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0]],"moves":[],"game":{"match_id":"local","game_number":1,"clock_remaining_ms":10000}}'
  */
 
-const http = require("node:http");
-const { chooseMove } = require("./bot.js");
+import http from "node:http";
+import { chooseMove } from "./bot.ts";
+import type { Board, Cell } from "./types.ts";
 
-// Columns that aren't full yet. Kept separate from bot.js so the server's
+// Columns that aren't full yet. Kept separate from bot.ts so the server's
 // safety check still works however you change your bot.
-function legalColumns(board) {
+function legalColumns(board: Board): number[] {
   return board
     .map((column, col) => (column[column.length - 1] === 0 ? col : -1))
     .filter((col) => col !== -1);
+}
+
+// TypeScript types don't exist at runtime and don't check JSON coming off
+// the wire, so we validate the request shape by hand before trusting it.
+function isCell(value: unknown): value is Cell {
+  return value === 0 || value === 1 || value === 2;
+}
+
+function isBoard(value: unknown): value is Board {
+  return (
+    Array.isArray(value) &&
+    value.every((column) => Array.isArray(column) && column.every(isCell))
+  );
+}
+
+function isRequest(value: unknown): value is { board: Board; you: 1 | 2 } {
+  if (typeof value !== "object" || value === null) return false;
+  const request = value as Record<string, unknown>;
+  return (
+    isBoard(request.board) &&
+    (request.you === 1 || request.you === 2)
+  );
 }
 
 const CORS_HEADERS = {
@@ -33,7 +57,7 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Private-Network": "true",
 };
 
-function send(res, status, bodyObj) {
+function send(res: http.ServerResponse, status: number, bodyObj?: unknown): void {
   const payload = bodyObj === undefined ? "" : JSON.stringify(bodyObj);
   res.writeHead(status, {
     "Content-Type": "application/json",
@@ -61,9 +85,13 @@ const server = http.createServer((req, res) => {
     });
     req.on("end", () => {
       try {
-        const request = JSON.parse(body);
-        const { board, you } = request;
+        const parsed: unknown = JSON.parse(body);
 
+        if (!isRequest(parsed)) {
+          throw new Error("request must have a `board` and a `you` of 1 or 2");
+        }
+
+        const { board, you } = parsed;
         const column = chooseMove(board, you);
 
         if (!Number.isInteger(column) || !legalColumns(board).includes(column)) {
@@ -72,7 +100,7 @@ const server = http.createServer((req, res) => {
 
         send(res, 200, { column });
       } catch (err) {
-        send(res, 500, { error: String(err && err.message ? err.message : err) });
+        send(res, 500, { error: String(err instanceof Error ? err.message : err) });
       }
     });
     return;
@@ -88,6 +116,6 @@ server.listen(port, "0.0.0.0", () => {
 
 // Exit promptly on `docker stop` / Ctrl-C (as PID 1 in a container, Node
 // ignores these signals by default and Docker waits 10s before killing it).
-for (const signal of ["SIGTERM", "SIGINT"]) {
+for (const signal of ["SIGTERM", "SIGINT"] as const) {
   process.on(signal, () => process.exit(0));
 }

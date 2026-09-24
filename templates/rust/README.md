@@ -1,12 +1,26 @@
-# Connect Four bot — Python starter
+# Connect Four bot — Rust starter
 
-Zero dependencies. Stdlib only — nothing to `pip install`.
+Three small crates: [`tiny_http`](https://crates.io/crates/tiny_http) for the
+HTTP server, [`serde`](https://crates.io/crates/serde) +
+[`serde_json`](https://crates.io/crates/serde_json) for JSON, and
+[`rand`](https://crates.io/crates/rand) for the default bot's random move.
+No `axum`/`tokio` — keeps the dependency tree (and build time) small.
+
+## Prerequisites
+
+Install Rust via [rustup](https://rustup.rs/) if you don't already have it.
 
 ## Quick start
 
 ```bash
-python3 server.py
+cargo run --release
 ```
+
+The first build downloads and compiles the crates above (and their
+dependencies), so it'll take a minute; after that, rebuilds are fast. Use
+`--release`: an unoptimized (`cargo run` without `--release`) build is much
+slower, and think-time matters once your bot is searching the board instead
+of picking randomly.
 
 The server listens on port 8000 (or `$PORT` if set). In another terminal:
 
@@ -20,9 +34,10 @@ You should get back something like `{"column": 4}`.
 
 ## What to edit
 
-Open `bot.py` and change the `choose_move(board, you)` function. That's it.
-`server.py` is the HTTP server (CORS headers, JSON parsing, error handling); it
-calls your function once per turn, and you shouldn't need to touch it.
+Open `src/bot.rs` and change the `choose_move(board, you)` function. That's
+it. `src/server.rs` is the HTTP server (CORS headers, JSON parsing, error
+handling, panic recovery); it calls your function once per turn, and you
+shouldn't need to touch it.
 
 - `board[col][row]` — column 0 is the left edge, row 0 is the bottom.
 - `0` = empty, `1` = player 1's piece, `2` = player 2's piece.

@@ -1,8 +1,9 @@
 """
-Connect Four bot starter (Python, stdlib only — no pip install needed).
+HTTP server for your Connect Four bot (Python, stdlib only; no pip install needed).
 
-Edit ONLY the `choose_move` function below. Everything else (HTTP server,
-CORS headers, JSON parsing) is already done for you.
+You shouldn't need to edit this file. Write your bot in bot.py: this server
+handles HTTP, CORS headers, and JSON parsing, then calls `choose_move` from
+bot.py once per turn.
 
 Run it:
     python3 server.py
@@ -14,29 +15,16 @@ Then test it:
 
 import json
 import os
-import random
+import signal
+import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-
-# ---------------------------------------------------------------------------
-# EDIT THIS FUNCTION. Everything else in this file you can ignore.
-#
-# board:  a list of 8 columns, each a list of 8 rows.
-#         board[col][row] — col 0 is the LEFT column, row 0 is the BOTTOM row.
-#         0 = empty, 1 = player 1's piece, 2 = player 2's piece.
-# you:    1 or 2 — which player you are this game.
-#
-# Return: an int 0-7, the column you want to drop a piece into.
-#         It MUST be a legal (non-full) column — see `legal_moves` below.
-# ---------------------------------------------------------------------------
-def choose_move(board, you):
-    return random.choice(legal_moves(board))
+from bot import choose_move
 
 
-# --- Everything below this line is plumbing. You shouldn't need to edit it. -
-
-def legal_moves(board):
-    """Columns that aren't full yet (top row is still empty)."""
+def legal_columns(board):
+    """Columns that aren't full yet. Kept separate from bot.py so the server's
+    safety check still works however you change your bot."""
     return [col for col, column in enumerate(board) if column[-1] == 0]
 
 
@@ -85,7 +73,7 @@ class BotHandler(BaseHTTPRequestHandler):
 
             column = choose_move(board, you)
 
-            if not isinstance(column, int) or column not in legal_moves(board):
+            if not isinstance(column, int) or column not in legal_columns(board):
                 raise ValueError(f"choose_move returned an illegal column: {column!r}")
 
             self._send(200, {"column": column})
@@ -99,7 +87,10 @@ class BotHandler(BaseHTTPRequestHandler):
 def main():
     port = int(os.environ.get("PORT", 8000))
     server = ThreadingHTTPServer(("0.0.0.0", port), BotHandler)
-    print(f"Bot listening on http://0.0.0.0:{port}")
+    # Exit promptly on `docker stop` (as PID 1 in a container, SIGTERM is
+    # otherwise ignored and Docker waits 10s before killing the bot).
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
+    print(f"Bot listening on http://0.0.0.0:{port}", flush=True)
     server.serve_forever()
 
 

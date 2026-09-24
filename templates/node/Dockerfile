@@ -1,7 +1,7 @@
 FROM node:20-slim
 
 WORKDIR /app
-COPY package.json server.js ./
+COPY package.json *.js ./
 
 ENV PORT=8000
 EXPOSE 8000

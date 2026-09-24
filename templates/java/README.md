@@ -1,11 +1,14 @@
-# Connect Four bot — Python starter
+# Connect Four bot — Java starter
 
-Zero dependencies. Stdlib only — nothing to `pip install`.
+Zero dependencies. JDK standard library only (`com.sun.net.httpserver`) —
+nothing to install beyond a JDK.
+
+Prerequisite: **JDK 17+**.
 
 ## Quick start
 
 ```bash
-python3 server.py
+javac *.java && java Server
 ```
 
 The server listens on port 8000 (or `$PORT` if set). In another terminal:
@@ -20,9 +23,11 @@ You should get back something like `{"column": 4}`.
 
 ## What to edit
 
-Open `bot.py` and change the `choose_move(board, you)` function. That's it.
-`server.py` is the HTTP server (CORS headers, JSON parsing, error handling); it
-calls your function once per turn, and you shouldn't need to touch it.
+Open `Bot.java` and change the `chooseMove(board, you)` function. That's it.
+`Server.java` is the HTTP server (CORS headers, JSON parsing, error
+handling); it calls your function once per turn, and you shouldn't need to
+touch it. `Json.java` is a small JSON parser/writer used by `Server.java` —
+you shouldn't need to touch that either.
 
 - `board[col][row]` — column 0 is the left edge, row 0 is the bottom.
 - `0` = empty, `1` = player 1's piece, `2` = player 2's piece.

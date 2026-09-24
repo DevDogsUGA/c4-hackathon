@@ -20,8 +20,9 @@ You should get back something like `{"column": 4}`.
 
 ## What to edit
 
-Open `server.js` and change the `chooseMove(board, you)` function. That's it —
-everything else (HTTP server, CORS headers, JSON parsing) is already wired up.
+Open `bot.js` and change the `chooseMove(board, you)` function. That's it.
+`server.js` is the HTTP server (CORS headers, JSON parsing, error handling); it
+calls your function once per turn, and you shouldn't need to touch it.
 
 - `board[col][row]` — column 0 is the left edge, row 0 is the bottom.
 - `0` = empty, `1` = player 1's piece, `2` = player 2's piece.
