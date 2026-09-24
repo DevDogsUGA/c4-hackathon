@@ -142,7 +142,7 @@ A crash is not free — it costs you clock time on the restart.
 Run it locally (see your template's README), then either:
 
 - `curl` it directly, as shown in each template's README, or
-- Use the hosted browser testground: **`<TESTGROUND_URL_PLACEHOLDER>`** — enter
+- Use the hosted browser testground: **<https://c4-testground.devdogs.workers.dev>** — enter
   `http://localhost:8000` (or wherever your bot is listening) and watch it
   play live against practice bots of varying strength (`random`, `greedy`,
   `minimax`). The testground shows you the raw request/response JSON of the
